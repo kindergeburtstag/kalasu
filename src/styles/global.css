@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold transition-colors;
+  }
+  
+  .btn-primary {
+    @apply btn bg-salbei text-white hover:bg-salbei/90;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-leinen text-ton border border-ton hover:bg-ton hover:text-white;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl p-6 shadow-sm border border-tau;
+  }
+  
+  .answer-box {
+    @apply bg-tau rounded-lg p-6 border-l-4 border-salbei mb-8;
+  }
+  
+  .feature-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+  }
+}

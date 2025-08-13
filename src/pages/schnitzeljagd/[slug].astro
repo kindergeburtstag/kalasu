@@ -1,0 +1,100 @@
+---
+import { getCollection, getEntryBySlug } from 'astro:content';
+import CityThemePage from '../../layouts/CityThemePage.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('cityThemeAge', ({ data }) => {
+    return data.publish !== false;
+  });
+  
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const data = entry.data;
+const siteUrl = Astro.site?.toString() || 'http://localhost:4321';
+const currentUrl = `${siteUrl}/schnitzeljagd/${entry.slug}`;
+
+// BreadcrumbList JSON-LD
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: siteUrl
+    },
+    {
+      '@type': 'ListItem', 
+      position: 2,
+      name: 'Schnitzeljagd',
+      item: `${siteUrl}/schnitzeljagd`
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: data.h1,
+      item: currentUrl
+    }
+  ]
+};
+
+// FAQPage JSON-LD
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: data.faq.map(item => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.a
+    }
+  }))
+};
+
+// HowTo JSON-LD
+const howToSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: `${data.theme}-Schnitzeljagd in ${data.city} durchführen`,
+  description: data.metaDescription,
+  totalTime: `PT${data.durationMin}M`,
+  supply: ['Druckkarten', 'Klebeband', 'kleine Preise', 'Smartphone für Audio'],
+  step: [
+    {
+      '@type': 'HowToStep',
+      name: 'Vorbereitung',
+      text: 'Karten ausdrucken und Materialien bereitlegen'
+    },
+    {
+      '@type': 'HowToStep', 
+      name: 'Start',
+      text: 'Erste Audio-Hinweise den Kindern vorspielen'
+    },
+    {
+      '@type': 'HowToStep',
+      name: 'Durchführung',
+      text: `${data.durationMin} Minuten Spielspaß mit allen vorbereiteten Stationen`
+    }
+  ]
+};
+
+// Kombiniere alle Schemas
+const combinedSchema = [breadcrumbSchema, faqSchema, howToSchema];
+
+const { Content } = await entry.render();
+---
+
+<CityThemePage 
+  data={data} 
+  schema={combinedSchema}
+  canonical={currentUrl}
+>
+  <Content />
+</CityThemePage>

@@ -1,0 +1,112 @@
+---
+import Base from './Base.astro';
+
+export interface Props {
+  data: any;
+  schema: any;
+  canonical?: string;
+}
+
+const { data, schema, canonical } = Astro.props;
+
+// Key Facts für Answer Box aus data ableiten
+const keyFacts = [
+  `Dauer: ${data.durationMin} Minuten`,
+  `Alter: ${data.ageBand} Jahre`,
+  `Ort: ${data.city}`,
+  data.features.find(f => f.includes('Indoor')) ? 'Indoor-Fallback verfügbar' : 'Outdoor-Aktivität',
+  'Sofort druckbar'
+];
+---
+
+<Base 
+  title={data.titleTag} 
+  description={data.metaDescription}
+  canonical={canonical}
+  noindex={!data.publish}
+>
+  <!-- Answer Box für AEO -->
+  <section class="answer-box max-w-4xl mx-auto mt-8 mx-4">
+    <h2 class="text-lg font-semibold text-salbei mb-4">Schnelle Fakten</h2>
+    <ul class="space-y-2">
+      {keyFacts.map(fact => (
+        <li class="flex items-center">
+          <span class="w-2 h-2 bg-salbei rounded-full mr-3"></span>
+          {fact}
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <!-- Hero Section -->
+  <section class="max-w-4xl mx-auto px-4 py-12">
+    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{data.h1}</h1>
+    <p class="text-xl text-gray-700 mb-8">{data.heroSubtitle}</p>
+    
+    <div class="flex flex-wrap gap-4">
+      <button class="btn-primary">Kostenlos testen</button>
+      <button class="btn-secondary">Vollversion freischalten</button>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section class="max-w-4xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-bold mb-8 text-center">Was ist enthalten?</h2>
+    <div class="feature-grid">
+      {data.features.map(feature => {
+        const [heading, ...descParts] = feature.split(':');
+        const description = descParts.join(':').trim();
+        
+        return (
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-3 text-salbei">{heading}</h3>
+            {description && <p class="text-gray-700">{description}</p>}
+          </div>
+        );
+      })}
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="max-w-4xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-bold mb-8 text-center">Häufige Fragen</h2>
+    <div class="space-y-4">
+      {data.faq.map(item => (
+        <details class="card group">
+          <summary class="cursor-pointer text-lg font-medium text-salbei group-open:mb-3">
+            {item.q}
+          </summary>
+          <p class="text-gray-700 leading-relaxed">{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- Intro Content -->
+  {data.intro && (
+    <section class="max-w-4xl mx-auto px-4 py-8">
+      <div class="prose prose-lg mx-auto">
+        <slot />
+      </div>
+    </section>
+  )}
+
+  <!-- JSON-LD Schema -->
+  <script type="application/ld+json" set:html={JSON.stringify(schema)}></script>
+</Base>
+
+<style>
+  details > summary {
+    list-style: none;
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+  details > summary::before {
+    content: '→';
+    margin-right: 0.5rem;
+  }
+  details[open] > summary::before {
+    content: '↓';
+  }
+</style>

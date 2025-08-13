@@ -1,0 +1,106 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;
+  canonical?: string;
+  ogImage?: string;
+}
+
+const { 
+  title, 
+  description, 
+  noindex = false, 
+  canonical, 
+  ogImage 
+} = Astro.props;
+
+const siteUrl = Astro.site?.toString() || 'http://localhost:4321';
+const currentUrl = canonical || new URL(Astro.url.pathname, siteUrl).toString();
+const defaultOgImage = `${siteUrl}/og-default.jpg`;
+
+// Globale JSON-LD Schemas
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'kalasu',
+  url: siteUrl,
+  logo: `${siteUrl}/logo.png`,
+  sameAs: [
+    'https://twitter.com/kalasu',
+    'https://facebook.com/kalasu'
+  ]
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  url: siteUrl,
+  name: 'kalasu',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${siteUrl}/suchen?q={search_term_string}`
+    },
+    'query-input': 'required name=search_term_string'
+  }
+};
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <title>{title}</title>
+    
+    {noindex && <meta name="robots" content="noindex" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={currentUrl} />
+    <meta property="og:image" content={ogImage || defaultOgImage} />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage || defaultOgImage} />
+    
+    <!-- Global JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)}></script>
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)}></script>
+    
+    <link rel="stylesheet" href="/src/styles/global.css" />
+  </head>
+  <body class="bg-leinen text-gray-900">
+    <header class="bg-white shadow-sm border-b border-tau">
+      <nav class="max-w-6xl mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+          <a href="/" class="text-xl font-bold text-salbei">kalasu</a>
+          <div>
+            <a href="/schnitzeljagd" class="text-ton hover:text-salbei transition-colors">
+              Schnitzeljagd
+            </a>
+          </div>
+        </div>
+      </nav>
+    </header>
+    
+    <main>
+      <slot />
+    </main>
+    
+    <footer class="bg-ton text-white text-center py-6 mt-12">
+      <p>&copy; {new Date().getFullYear()} kalasu</p>
+    </footer>
+  </body>
+</html>
